@@ -1,0 +1,62 @@
+# feature_config.yaml
+meta:
+  name: "step2_feature_store"
+  version: "0.1.0"
+  timezone: "Europe/Berlin"
+
+data:
+  price_col: "close"
+  volume_col: "volume"
+
+features:
+  basic:
+    returns: [1, 5, 10]        # simple returns over N bars
+    log_returns: [1]           # log-returns over N bars
+    rolling_mean: [5, 20, 50]
+    rolling_std: [5, 20, 50]
+    rolling_minmax: [14]       # rolling min/max range features
+  ta:
+    rsi:
+      enabled: true
+      period: 14
+    macd:
+      enabled: true
+      fast: 12
+      slow: 26
+      signal: 9
+    stochastic:
+      enabled: true
+      k: 14
+      d: 3
+    bollinger:
+      enabled: true
+      period: 20
+      k: 2.0
+    atr_adx:
+      enabled: true
+      atr_len: 14
+      adx_len: 14
+    ichimoku:
+      enabled: false
+      tenkan: 9
+      kijun: 26
+      senkou: 52
+
+leak_guard:
+  shift: 1                     # shift all features by 1 bar to prevent lookahead
+
+labeling:
+  method: "triple_barrier"
+  horizon_bars: 20
+  tp_mult: 2.0
+  sl_mult: 1.0
+  use_atr: true
+  atr_len: 14
+  zero_threshold: 0.0          # set >0 to force neutral labels near 0 return
+  side: "both"                 # "both" (symmetric), "long_only", or "short_only"
+
+exports:
+  features_parquet: "features.parquet"
+  labels_parquet: "labels.parquet"
+  dataset_parquet: "dataset.parquet"
+  dataset_csv: "dataset.csv"

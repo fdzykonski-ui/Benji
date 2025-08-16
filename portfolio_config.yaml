@@ -1,0 +1,49 @@
+# portfolio_config.yaml
+meta:
+  name: "step4_portfolio_backtester"
+  version: "0.1.0"
+  timezone: "Europe/Berlin"
+
+assets:
+  # Example:
+  # - symbol: "ASSET1"
+  #   csv: "asset1.csv"
+  #   sep: ","
+  # - symbol: "ASSET2"
+  #   csv: "asset2.csv"
+  #   sep: ","
+  # All CSVs must share the same timestamp grid for Step 4 (same timeframe, same rows).
+
+signals:
+  mode: "router"            # "router" | "fixed"
+  fixed_signal_col: "signal_supertrend"   # used if mode == fixed
+  router_config: "router_config.yaml"     # used if mode == router
+
+sizing:
+  risk_per_trade: 0.01      # fraction of current equity allocated to new entries at a bar (shared across assets entering simultaneously)
+  use_conformal: false
+  conformal_artifacts_dir: "step3_artifacts"
+  size_floor: 0.0
+  size_cap: 1.0
+
+execution:
+  fee: 0.0005               # proportional fee per trade
+  slippage: 0.0002          # proportional slippage
+  allow_short: true
+
+stops:
+  atr_len: 14
+  atr_mult: 2.0
+  trailing: true
+
+portfolio_limits:
+  max_positions: 5
+  max_gross_exposure: 1.5   # 150% of equity (MTM)
+  max_drawdown: 0.2         # stop deploying new entries when breached
+  daily_loss_limit: 0.05    # relative to prior day's close equity
+  hard_stop_on_maxdd: false # if true, flatten all positions on breach
+
+exports:
+  equity_csv: "portfolio_equity.csv"
+  trades_csv: "portfolio_trades.csv"
+  diagnostics_csv: "portfolio_diag.csv"

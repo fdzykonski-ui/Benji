@@ -1,0 +1,1 @@
+pip install numpy pandas scipy scikit-learn joblib pyyaml pyarrow fastparquet pytest

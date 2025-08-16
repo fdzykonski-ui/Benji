@@ -1,0 +1,69 @@
+# model_config.yaml
+meta:
+  name: "step3_training_pipeline"
+  version: "0.1.0"
+  timezone: "Europe/Berlin"
+
+data:
+  # Use outputs from Step 2
+  dataset_parquet: "dataset.parquet"   # fallback to dataset.csv if not found
+  dataset_csv: "dataset.csv"
+
+target:
+  column: "y"
+  classes: [-1, 0, 1]
+
+features:
+  # If empty, we auto-select all numeric columns except target & ['ret','exit_index']
+  include: []
+  exclude: ["y","ret","exit_index"]
+
+cv:
+  scheme: "walk-forward"
+  train_bars: 2000      # number of bars in each training window
+  test_bars: 250        # number of bars in each test window
+  step_bars: 250        # slide step
+  purge_gap: 10         # bars to purge between train and test
+  calibrate_frac: 0.2   # portion of train used for calibration/validation
+
+models:
+  # Candidate model grids. Keep grids compact for speed; expand later.
+  - name: "RandomForest"
+    type: "rf"
+    params:
+      n_estimators: [200, 500]
+      max_depth: [null, 6, 12]
+      min_samples_leaf: [1, 3]
+      class_weight: ["balanced"]
+      random_state: [42]
+  - name: "GradientBoosting"
+    type: "gb"
+    params:
+      n_estimators: [200, 400]
+      learning_rate: [0.01, 0.05, 0.1]
+      max_depth: [2, 3]
+      random_state: [42]
+  - name: "LogisticRegression"
+    type: "lr"
+    params:
+      C: [0.5, 1.0, 2.0]
+      penalty: ["l2"]
+      solver: ["lbfgs"]
+      max_iter: [200]
+
+calibration:
+  method: "sigmoid"     # 'sigmoid' (Platt) or 'isotonic'
+  n_jobs: 1
+
+conformal:
+  alpha: 0.20           # 1-alpha is acceptance threshold quantile on (1 - p_true)
+  size_floor: 0.0       # min position size when accepted
+  size_cap: 1.0         # max relative size (multiplied later by risk budget)
+
+exports:
+  out_dir: "step3_artifacts"
+  cv_report_csv: "cv_report.csv"
+  fold_predictions_parquet: "fold_predictions.parquet"
+  best_model_pkl: "best_model.pkl"
+  threshold_json: "conformal_threshold.json"
+  final_metrics_json: "final_metrics.json"

@@ -1,0 +1,44 @@
+# router_config.yaml
+# Minimal, pragmatic Step 1 config for the Model Router.
+# Regime detection: ADX-based with hysteresis.
+# Routing: pick first enabled model for the current regime whose signal != 0.
+# Timezone is set to Europe/Berlin by default in the CLI.
+meta:
+  name: "step1_model_router"
+  version: "0.1.0"
+  timezone: "Europe/Berlin"
+
+regime_detection:
+  adx_len: 14
+  thresholds:
+    trend_on: 22         # ADX >= trend_on => trend regime
+    range_on: 18         # ADX <= range_on => range regime
+  hysteresis:
+    keep_below: 20       # if ADX between 18..22, stick to previous regime with this mid threshold
+
+routing:
+  # Strategy: first_nonzero | majority_vote
+  mode: "first_nonzero"
+
+  # For each regime, list candidate model signal names in the order to try.
+  # Valid names (from top5_models.py): signal_ma_cross, signal_ema_adx, signal_donchian, signal_supertrend, signal_ichimoku
+  regimes:
+    trend:
+      enabled: true
+      candidates:
+        - signal_supertrend
+        - signal_ma_cross
+        - signal_ema_adx
+        - signal_ichimoku
+    range:
+      enabled: false     # disable trading in range for Step 1 (safer); set true if you want to use a candidate
+      candidates:
+        - signal_ma_cross
+    breakout:
+      enabled: true
+      candidates:
+        - signal_donchian
+
+exports:
+  routed_signals_csv: "routed_signals.csv"
+  debug_sheet_csv: "router_debug.csv"
