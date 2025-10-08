@@ -1,0 +1,7 @@
+pandas>=2.0
+numpy>=1.25
+yfinance>=0.2
+optuna>=3.0
+cmaes>=0.9
+scipy>=1.11
+# freqtrade absichtlich nicht automatisch installiert (umgebungsabhängig)
